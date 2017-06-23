@@ -22,6 +22,7 @@ public class DBManagerFake implements DBManager {
 
     private Map<String, User> db = new HashMap<>();
     private Map<String, String> passwords = new HashMap<>();
+    private Map<String, Integer> tokens = new HashMap<>();
     private int count;
 
     @Override
@@ -29,7 +30,6 @@ public class DBManagerFake implements DBManager {
         if (password != null && password.equals(passwords.get(username))) {
             return db.get(username);
         }
-
         return null;
     }
 
@@ -38,13 +38,10 @@ public class DBManagerFake implements DBManager {
         synchronized (db) {
             validate(request);
             User user = new User();
-            user.setEmail(request.getEmail());
             user.setUsername(request.getUsername());
-            user.setFirstName(request.getFirstName());
-            user.setSecondName(request.getSecondName());
             user.setId(count++);
             user.setRoles(request.getUsername().equals("dato") ? 
-                    new String[]{"admin", "user"} 
+                    new String[]{"uploader", "user"} 
                     : new String[]{"user"});
             db.put(request.getUsername(), user);
             passwords.put(request.getUsername(), request.getPassword());
@@ -54,17 +51,28 @@ public class DBManagerFake implements DBManager {
 
     private void validate(SignUpRequestDTO request) throws GlobalException {
         GlobalException exception = new GlobalException();
-        if (request.getUsername() == null) {
-            exception.addError(new ViolationDTO("username", "Should not be null!"));
+        if (request.getUsername() == null || request.getUsername().isEmpty()) {
+            exception.addError(new ViolationDTO("username", "არ უნდა იყოს ცარიელი!"));
         } else if (db.containsKey(request.getUsername())) {
-            exception.addError(new ViolationDTO("username", "Already exists!"));
+            exception.addError(new ViolationDTO("username", "ასეთი username უკვე არსებობს."));
         }
-        if (request.getPassword() == null) {
-            exception.addError(new ViolationDTO("password", "Should not be null!"));
-        }
+        exception.addError(new ViolationDTO("password", "არ უნდა იყოს ცარიელი!"));
         if (!exception.getErrors().isEmpty()) {
             throw exception;
         }
     }
 
+    @Override
+    public void saveToken(String token, int id) {
+        tokens.put(token, id);
+    }
+
+    @Override
+    public void removeToken(String token) {
+        if (tokens.containsKey(token)){
+            tokens.remove(token);
+        }
+    }
+
+    
 }

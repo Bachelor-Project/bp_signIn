@@ -11,7 +11,7 @@ package com.mycompany.bp.signin.db;
  */
 public class DBData {
     
-    public static final String DB_PATH = "jdbc:mysql://localhost:3306/bp_tasks";
+    public static final String DB_PATH = "jdbc:mysql://localhost:3306/bp_users";
     public static final String JDBC_DRIVER = "com.mysql.jdbc.Driver";
     public static final String USERNAME = "root";
     public static final String PASSWORD = "12345";

@@ -17,5 +17,7 @@ public interface DBManager {
     
     public User getUser(String username, String password);
     public User saveUser(SignUpRequestDTO request) throws GlobalException;
+    public void saveToken(String token, int id);
+    public void removeToken(String token);
     
 }

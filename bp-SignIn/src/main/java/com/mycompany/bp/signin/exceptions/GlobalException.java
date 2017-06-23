@@ -28,4 +28,14 @@ public class GlobalException extends Exception {
     public void addError(ViolationDTO error){
         errors.add(error);
     }
+
+    @Override
+    public String toString() {
+        String result = "";
+        for (ViolationDTO error : errors) {
+            result += (error + "\n");
+        }
+        return result;
+    }
+    
 }

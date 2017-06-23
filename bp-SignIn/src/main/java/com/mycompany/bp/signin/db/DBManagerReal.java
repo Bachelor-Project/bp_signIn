@@ -13,6 +13,8 @@ import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.tomcat.jdbc.pool.DataSource;
@@ -51,31 +53,121 @@ public class DBManagerReal implements DBManager {
     
     @Override
     public User getUser(String username, String password) {
-        return null;
+        User result = null;
+        try {
+            Connection con = datasource.getConnection();
+            CallableStatement stmt =  con.prepareCall("call authenticate(?, ?)");
+            stmt.setString(1, username);
+            stmt.setString(2, password);
+            stmt.execute();
+            
+            ResultSet rsSet = stmt.getResultSet();
+            if(rsSet.next()){
+                result = getUserWithRoles(con, username);
+            }
+            stmt.close();
+            con.close();
+        } catch (SQLException ex) {
+            Logger.getLogger(DBManagerReal.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return result;
     }
 
     @Override
     public User saveUser(SignUpRequestDTO request) throws GlobalException {
-        User result = null;
+        User user = null;
         try {
             Connection con = datasource.getConnection();
-            CallableStatement stmt = con.prepareCall("call save(?, ?, ?)");
+            saveUserInDB(con, request);
+            user = getUserWithRoles(con, request.getUsername());
+            con.close();
+        } catch (SQLException ex) {
+            Logger.getLogger(DBManagerReal.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return user;
+    }
+    
+    private void saveUserInDB(Connection con, SignUpRequestDTO request) throws GlobalException {
+        try {
+            CallableStatement stmt = con.prepareCall("call save(?, ?)");
             stmt.setString(1, request.getUsername());
             stmt.setString(2, request.getPassword());
-            stmt.setString(3, request.getEmail());
             stmt.execute();
             
             GlobalException ex = new GlobalException();
             ResultSet set = stmt.getResultSet();
             set.next();
             int ans = set.getInt(1);
-            if (ans == 401){
-                ex.addError(new ViolationDTO("", ""));
+            if (ans == 400){
+                ex.addError(new ViolationDTO("username", "ასეთი username უკვე არსებობს."));
+                throw ex;
             }
+            stmt.close();
+        } catch (SQLException ex) {
+            Logger.getLogger(DBManagerReal.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    
+    private User getUserWithRoles(Connection con, String username){
+        User result = null;
+        try {
+            CallableStatement stmtUser = con.prepareCall("call select_user(?)");
+            stmtUser.setString(1, username);
+            stmtUser.execute();
+            
+            ResultSet rsSet = stmtUser.getResultSet();
+            if (rsSet.next()){
+                result = new User();
+                result.setId(rsSet.getInt(1));
+                result.setUsername(rsSet.getString(2));
+
+                CallableStatement stmtRoles = con.prepareCall("call select_user_roles(?)");
+                stmtRoles.setInt(1, result.getId());
+                stmtRoles.execute();
+
+                ResultSet rolesSet = stmtRoles.getResultSet();
+                List<String> roles = new ArrayList<>();
+                while(rolesSet.next()){
+                    roles.add(rolesSet.getString(1));
+                }
+                
+                result.setRoles(roles.toArray(new String[roles.size()]));
+                stmtRoles.close();
+            }
+            stmtUser.close();
         } catch (SQLException ex) {
             Logger.getLogger(DBManagerReal.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }
-    
+
+    @Override
+    public void saveToken(String token, int id) {
+        try {
+            Connection con = datasource.getConnection();
+            CallableStatement stmt = con.prepareCall("call save_token(?, ?)");
+            stmt.setString(1, token);
+            stmt.setInt(2, id);
+            stmt.execute();
+            stmt.close();
+            con.close();
+        } catch (SQLException ex) {
+            Logger.getLogger(DBManagerReal.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    @Override
+    public void removeToken(String token) {
+//        try {
+//            Connection con = datasource.getConnection();
+//            CallableStatement stmt = con.prepareCall("call remove_token(?)");
+//            stmt.setString(1, token);
+//            stmt.execute();
+//            stmt.close();
+//            con.close();
+//        } catch (SQLException ex) {
+//            Logger.getLogger(DBManagerReal.class.getName()).log(Level.SEVERE, null, ex);
+//        }
+    }
+
 }

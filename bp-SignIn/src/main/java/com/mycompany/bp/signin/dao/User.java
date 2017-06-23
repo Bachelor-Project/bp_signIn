@@ -13,9 +13,6 @@ public class User {
     
     private int id;
     private String username;
-    private String email;
-    private String firstName;
-    private String secondName;
     private String[] roles;
 
     public String getUsername() {
@@ -34,30 +31,6 @@ public class User {
         this.username = username;
     }
 
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getFirstName() {
-        return firstName;
-    }
-
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
-    }
-
-    public String getSecondName() {
-        return secondName;
-    }
-
-    public void setSecondName(String secondName) {
-        this.secondName = secondName;
-    }
-
     public String[] getRoles() {
         return roles;
     }
@@ -65,11 +38,10 @@ public class User {
     public void setRoles(String[] roles) {
         this.roles = roles;
     }
-    
 
     @Override
     public String toString() {
-        return "User{" + "username=" + username + ", email=" + email + ", firstName=" + firstName + ", secondName=" + secondName + '}';
+        return "User{" + "id=" + id + ", username=" + username + ", roles=" + roles + '}';
     }
     
     

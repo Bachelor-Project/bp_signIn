@@ -33,6 +33,10 @@ public class ViolationDTO {
     public void setValue(String value) {
         this.value = value;
     }
-    
+
+    @Override
+    public String toString() {
+        return "ViolationDTO{" + "key=" + key + ", value=" + value + '}';
+    }
     
 }
