@@ -81,7 +81,7 @@ public class SigninResource {
         String token = helper.getToken(user);
         dbManager.saveToken(token, user.getId());
         System.out.println("--------------- shevinaxet token " + token + "   --> user-ze: " + user.getId());
-        return Response.status(200).entity(token).type(MediaType.TEXT_PLAIN).build();
+        return Response.status(200).header("x-token", token).entity(user).build();
     }
     
     @POST
