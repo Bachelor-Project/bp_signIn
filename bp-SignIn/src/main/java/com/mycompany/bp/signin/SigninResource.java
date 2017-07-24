@@ -79,7 +79,6 @@ public class SigninResource {
         }
         JwtHelper helper = JwtHelper.getInstance(Constants.ISSUER_KEY, Constants.SECRET_KEY);
         String token = helper.getToken(user);
-        dbManager.saveToken(token, user.getId());
         System.out.println("--------------- shevinaxet token " + token + "   --> user-ze: " + user.getId());
         return Response.status(200).header("x-token", token).entity(user).build();
     }
